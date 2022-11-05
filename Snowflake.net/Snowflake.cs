@@ -37,7 +37,19 @@ namespace Snowflake.net
 
         public virtual long NextId()
         {
+            lock (_lock)
+            {
+                var timestamp = TimeGen();
 
+
+
+            }
+        }
+
+
+        protected virtual long TimeGen()
+        {
+            return System.CurrentTimeMillis();
         }
     }
 }
