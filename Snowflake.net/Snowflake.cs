@@ -20,7 +20,7 @@ namespace Snowflake
         private long _sequence = 0L;
         private long _lastTimestamp = -1L;
 
-        readonly object _lock = new object();
+        private readonly object _lock = new object();
 
         public Snowflake(long workerId, long dataCenterId, long sequence = 0L)
         {
@@ -52,9 +52,7 @@ namespace Snowflake
                     if (_sequence == 0)
                     {
                         timestamp = TilNextMillis(_lastTimestamp);
-                    
                     }
-
                 }
                 else
                 {
@@ -73,7 +71,6 @@ namespace Snowflake
                 timestamp = TimeGen();
             }
             return timestamp;
-
         }
 
         protected virtual long TimeGen()
