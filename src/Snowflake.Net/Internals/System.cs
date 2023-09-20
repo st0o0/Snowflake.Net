@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Snowflake.Internals
+namespace Snowflake.Net.Internals
 {
     internal static class System
     {

@@ -6,8 +6,8 @@ variables:
   - name: vmImage
     value: ubuntu-latest
   - name: solutionPath
-    value: src/NumberPlateGenerator.Net.sln
+    value: src/Snowflake.Net.sln
   - name: projectPath
-    value: src/NumberPlateGenerator.Net.Core/NumberPlateGenerator.Net.Core.csproj
+    value: src/Snowflake.Net.Core/Snowflake.Net.Core.csproj
   - name: internalFeedName
-    value: NumberPlateGenerator.Net/NumberPlateGenerator.Net
+    value: Snowflake.Net/Snowflake.Net
