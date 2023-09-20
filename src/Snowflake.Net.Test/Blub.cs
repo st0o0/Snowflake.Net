@@ -9,7 +9,7 @@ public class Blub
     {
         var idOne = new SnowflakeId(123);
         var IdTwo = new SnowflakeId(123);
-        Assert.NotEqual(idOne., IdTwo);
+        Assert.NotEqual(idOne, IdTwo);
     }
 
     [Fact]
