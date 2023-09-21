@@ -107,7 +107,7 @@ namespace Snowflake.Net
             _number = number;
         }
 
-        public static SnowflakeId From(long number) => new (number);
+        public static SnowflakeId From(long number) => new(number);
 
         public static SnowflakeId From(byte[] bytes)
         {
@@ -152,7 +152,7 @@ namespace Snowflake.Net
             number |= ALPHABET_VALUES[chars[0x0b]] << 5;
             number |= ALPHABET_VALUES[chars[0x0c]];
 
-            return new (number);
+            return new(number);
         }
 
         public static SnowflakeId Decode(string value, int number) => BaseN.Decode(value, number);
@@ -401,7 +401,7 @@ namespace Snowflake.Net
                 }
 
                 // finally, check if happened an overflow
-                MemoryStream stream = new ();
+                MemoryStream stream = new();
                 stream.SetLength(8);
                 stream.Write(BitConverter.GetBytes(last), 0, 8);
                 byte[] bytes = stream.ToArray();
