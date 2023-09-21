@@ -8,6 +8,6 @@ variables:
   - name: solutionPath
     value: src/Snowflake.Net.sln
   - name: projectPath
-    value: src/Snowflake.Net.Core/Snowflake.Net.Core.csproj
+    value: src/Snowflake.Net/Snowflake.Net.csproj
   - name: internalFeedName
     value: Snowflake.Net/Snowflake.Net
