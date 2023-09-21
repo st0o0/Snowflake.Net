@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using DotNext.Threading;
 
 namespace Snowflake.Net
 {
@@ -12,9 +13,14 @@ namespace Snowflake.Net
         private static readonly long serialVersionUID = -5446820982139116297L;
         private readonly long _number;
 
+        private static int _atomic = new Random().Next();
+
         internal static readonly int TSID_BYTES = 8;
         internal static readonly int TSID_CHARS = 13;
         public static readonly long TSID_EPOCH = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).Millisecond;
+
+        internal static readonly int RANDOM_BITS = 22;
+        internal static readonly int RANDOM_MASK = 0x003fffff;
 
         private static readonly char[] ALPHABET_UPPERCASE = //
 			{ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', //
@@ -27,7 +33,7 @@ namespace Snowflake.Net
 					'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z' };
 
 
-        private static readonly Dictionary<char, byte> ALPHABET_VALUES = new Dictionary<char, byte>()
+        private static readonly Dictionary<char, byte> ALPHABET_VALUES = new()
         {
             // numbers
             { '0', 0x00 },
@@ -101,7 +107,7 @@ namespace Snowflake.Net
             _number = number;
         }
 
-        public static SnowflakeId From(long number) => new SnowflakeId(number);
+        public static SnowflakeId From(long number) => new (number);
 
         public static SnowflakeId From(byte[] bytes)
         {
@@ -122,7 +128,7 @@ namespace Snowflake.Net
             number |= (bytes[0x6] & 0xffL) << 8;
             number |= bytes[0x7] & 0xffL;
 
-            return new SnowflakeId(number);
+            return From(number);
         }
 
         public static SnowflakeId From(string value)
@@ -146,7 +152,124 @@ namespace Snowflake.Net
             number |= ALPHABET_VALUES[chars[0x0b]] << 5;
             number |= ALPHABET_VALUES[chars[0x0c]];
 
-            return new SnowflakeId(number);
+            return new (number);
+        }
+
+        public static SnowflakeId Decode(string value, int number) => BaseN.Decode(value, number);
+
+        public static SnowflakeId Fast()
+        {
+            long time = (Internals.System.CurrentTimeMillis() - TSID_EPOCH) << RANDOM_BITS;
+            long tail = AtomicInt32.IncrementAndGet(ref _atomic) & RANDOM_MASK;
+            return new SnowflakeId(time | tail);
+        }
+
+        public long ToLong() => this._number;
+
+        public byte[] ToBytes()
+        {
+            var result = new byte[TSID_BYTES];
+
+            result[0x0] = (byte)(_number >>> 56);
+            result[0x1] = (byte)(_number >>> 48);
+            result[0x2] = (byte)(_number >>> 40);
+            result[0x3] = (byte)(_number >>> 32);
+            result[0x4] = (byte)(_number >>> 24);
+            result[0x5] = (byte)(_number >>> 16);
+            result[0x6] = (byte)(_number >>> 8);
+            result[0x7] = (byte)_number;
+
+            return result;
+        }
+
+        public string ToLower() => ToString(ALPHABET_LOWERCASE, _number);
+
+        public long GetUnixMilliseconds() => GetTime() + TSID_EPOCH;
+
+        public long GetUnixMilliseconds(long customEpoch) => GetTime() + customEpoch;
+
+        public string Encode(int value) => BaseN.Encode(this, value);
+
+        public string Format(string format)
+        {
+            if (format != null)
+            {
+                int i = format.IndexOf("%");
+                if (i < 0 || i == format.Length - 1)
+                {
+                    throw new InvalidOperationException(string.Format("Invalid format string: \"%s\"", format));
+                }
+                string head = format[..i];
+                string tail = format[(i + 2)..];
+                char placeholder = format.ElementAt(i + 1);
+                return placeholder switch
+                {
+                    // canonical string in upper case
+                    'S' => head + ToString() + tail,
+                    // canonical string in lower case
+                    's' => head + ToLower() + tail,
+                    // hexadecimal in upper case
+                    'X' => head + BaseN.Encode(this, 16) + tail,
+                    // hexadecimal in lower case
+                    'x' => head + BaseN.Encode(this, 16).ToLower() + tail,
+                    // base-10
+                    'd' => head + BaseN.Encode(this, 10) + tail,
+                    // base-62
+                    'z' => head + BaseN.Encode(this, 62) + tail,
+                    _ => throw new InvalidOperationException(string.Format("Invalid placeholder: \"%%%s\"", placeholder)),
+                };
+            }
+            throw new InvalidOperationException(string.Format("Invalid format string: \"%s\"", format));
+        }
+
+        public static SnowflakeId Unformat(string formatted, string format)
+        {
+            if (formatted != null && format != null)
+            {
+                int i = format.IndexOf("%");
+                if (i < 0 || i == format.Length - 1)
+                {
+                    throw new InvalidOperationException(string.Format("Invalid format string: \"%s\"", format));
+                }
+                string head = format[..i];
+                string tail = format[(i + 2)..];
+                char placeholder = format.ElementAt(i + 1);
+                int length = formatted.Length - head.Length - tail.Length;
+                if (formatted.StartsWith(head) && formatted.EndsWith(tail))
+                {
+                    return placeholder switch
+                    {
+                        // canonical string (case insensitive)
+                        'S' => From(formatted.Substring(i, i + length)),
+                        // canonical string (case insensitive)
+                        's' => From(formatted.Substring(i, i + length)),
+                        // hexadecimal (case insensitive)
+                        'X' => BaseN.Decode(formatted.Substring(i, i + length).ToUpper(), 16),
+                        // hexadecimal (case insensitive)
+                        'x' => BaseN.Decode(formatted.Substring(i, i + length).ToUpper(), 16),
+                        // base-10
+                        'd' => BaseN.Decode(formatted.Substring(i, i + length), 10),
+                        // base-62
+                        'z' => BaseN.Decode(formatted.Substring(i, i + length), 62),
+                        _ => throw new InvalidOperationException(message: string.Format("Invalid placeholder: \"%%%s\"", placeholder)),
+                    };
+                }
+            }
+            throw new InvalidOperationException(message: string.Format("Invalid formatted string: \"%s\"", formatted));
+        }
+
+        public override bool Equals(SnowflakeId value, SnowflakeId other)
+        {
+            if (other == null || value == null)
+                return false;
+            if (other.GetType() != typeof(SnowflakeId) || value.GetType() != typeof(SnowflakeId))
+                return false;
+            return value._number == other._number;
+        }
+
+        public override int GetHashCode(SnowflakeId obj)
+        {
+            return (int)(_number ^ (_number >>> 32));
         }
 
         static char[] ToCharArray(string value)
@@ -185,24 +308,37 @@ namespace Snowflake.Net
             return true; // It seems to be OK.
         }
 
-        public override bool Equals(SnowflakeId x, SnowflakeId y)
+        static string ToString(char[] alphabet, long number)
         {
-            // todo: KEKW
-            return false;
+            char[] chars = new char[TSID_CHARS];
+
+            chars[0x00] = alphabet[(int)((number >>> 60) & 0b11111)];
+            chars[0x01] = alphabet[(int)((number >>> 55) & 0b11111)];
+            chars[0x02] = alphabet[(int)((number >>> 50) & 0b11111)];
+            chars[0x03] = alphabet[(int)((number >>> 45) & 0b11111)];
+            chars[0x04] = alphabet[(int)((number >>> 40) & 0b11111)];
+            chars[0x05] = alphabet[(int)((number >>> 35) & 0b11111)];
+            chars[0x06] = alphabet[(int)((number >>> 30) & 0b11111)];
+            chars[0x07] = alphabet[(int)((number >>> 25) & 0b11111)];
+            chars[0x08] = alphabet[(int)((number >>> 20) & 0b11111)];
+            chars[0x09] = alphabet[(int)((number >>> 15) & 0b11111)];
+            chars[0x0a] = alphabet[(int)((number >>> 10) & 0b11111)];
+            chars[0x0b] = alphabet[(int)((number >>> 5) & 0b11111)];
+            chars[0x0c] = alphabet[(int)(number & 0b11111)];
+
+            return new string(chars);
         }
 
-        public override int GetHashCode(SnowflakeId obj)
-        {
-            // todo: KEKW
-            return 0;
-        }
+        private long GetTime() => _number >>> RANDOM_BITS;
 
-        public static class BaseN
+        private long GetRandom() => _number & RANDOM_MASK;
+
+        internal static class BaseN
         {
             static readonly BigInteger MAX = BigInteger.Subtract(BigInteger.Pow(new BigInteger(2), 64), BigInteger.One);
             static readonly string ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"; // base-62
 
-            static string Encode(SnowflakeId tsid, int baseN)
+            internal static string Encode(SnowflakeId tsid, int baseN)
             {
 
                 if (baseN < 2 || baseN > 62)
@@ -229,7 +365,7 @@ namespace Snowflake.Net
                 return new string(buffer);
             }
 
-            static SnowflakeId Decode(string value, int baseN)
+            internal static SnowflakeId Decode(string value, int baseN)
             {
 
                 if (value == null)
@@ -265,34 +401,25 @@ namespace Snowflake.Net
                 }
 
                 // finally, check if happened an overflow
-                MemoryStream stream = new MemoryStream();
+                MemoryStream stream = new ();
                 stream.SetLength(8);
                 stream.Write(BitConverter.GetBytes(last), 0, 8);
                 byte[] bytes = stream.ToArray();
                 stream.Close();
                 BigInteger lazt = BigInteger.Add(1, new BigInteger(bytes));
-                BigInteger baze = new BigInteger(baseN);
-                BigInteger pluz = new BigInteger(plus);
+                BigInteger baze = new(baseN);
+                BigInteger pluz = new(plus);
                 if (BigInteger.Compare(BigInteger.Add(BigInteger.Multiply(lazt, baze), pluz), MAX) > 0)
                 {
                     throw new InvalidOperationException(string.Format("Invalid base-%d value (overflow): %s", baseN, lazt));
                 }
 
-                return new SnowflakeId(x);
+                return new(x);
             }
 
-            private static int Length(int value)
-            {
-                return (int)Math.Ceiling(long.MaxValue / (Math.Log(value) / Math.Log(2)));
-            }
+            private static int Length(int value) => (int)Math.Ceiling(long.MaxValue / (Math.Log(value) / Math.Log(2)));
 
-            private static void ThrowException(string value)
-            {
-                throw new InvalidOperationException(value);
-            }
+            private static void ThrowException(string value) => throw new InvalidOperationException(value);
         }
-
     }
-
-
 }
