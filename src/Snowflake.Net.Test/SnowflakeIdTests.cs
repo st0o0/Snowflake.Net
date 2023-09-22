@@ -14,7 +14,7 @@ public class SnowflakeIdTests
     }
 
     [Fact]
-    public void GetOneIdAndParseItToStringAndBackToSnowflakeId()
+    public void GetOneIdAndParseItToLongAndBackToSnowflakeId()
     {
         var idOne = SnowflakeFactory.NewInstance256().Create();
         var valueLong = idOne.ToLong();
@@ -34,4 +34,15 @@ public class SnowflakeIdTests
         var result = SnowflakeId.From(value);
         Assert.Equal(idOne.ToLong(), result.ToLong());
     }
+
+    // [Fact]
+    // public void GetOneIdAndParseItToStringAndBackToSnowflakeId()
+    // {
+    //     var idOne = SnowflakeFactory.NewInstance256().Create();
+    //     var value = idOne.ToString();
+    //     Assert.IsType<string>(value);
+    //     Assert.Equal(13, value.Length);
+    //     var result = SnowflakeId.From(value);
+    //     Assert.Equal(idOne.ToLong(), result.ToLong());
+    // }
 }

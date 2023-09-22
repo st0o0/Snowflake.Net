@@ -129,7 +129,6 @@ public sealed class SnowflakeId : EqualityComparer<SnowflakeId>
 
     public static SnowflakeId From(string value)
     {
-
         var chars = ToCharArray(value);
 
         var number = 0L;
@@ -266,6 +265,8 @@ public sealed class SnowflakeId : EqualityComparer<SnowflakeId>
         return value._number == other._number;
     }
 
+    public override string ToString() => ToString(ALPHABET_UPPERCASE, _number);
+
     public override int GetHashCode(SnowflakeId obj)
     {
         return (int)(_number ^ (_number >>> 32));
@@ -283,30 +284,23 @@ public sealed class SnowflakeId : EqualityComparer<SnowflakeId>
 
     static bool IsValidCharArray(char[] chars)
     {
+        
+		if (chars == null || chars.Length != TSID_CHARS) {
+			return false; // null or wrong size!
+		}
 
-        if (chars == null || chars.Length != TSID_CHARS)
-        {
-            return false; // null or wrong size!
-        }
+		// The extra bit added by base-32 encoding must be zero
+		// As a consequence, the 1st char of the input string must be between 0 and F.
+		if ((ALPHABET_VALUES[chars[0]] & 0b10000) != 0) {
+			return false; // overflow!
+		}
 
-        // The extra bit added by base-32 encoding must be zero
-        // As a consequence, the 1st char of the input string must be between 0 and F.
-        if ((ALPHABET_VALUES[chars[0]] & 0b10000) != 0)
-        {
-            return false; // overflow!
-        }
-
-        for (var i = 0; i < chars.Length; i++)
-        {
-            if (!ALPHABET_VALUES.ContainsKey(chars[i]))
-            {
-                return false; // invalid character!
-            }
-
-            continue;
-        }
-
-        return true; // It seems to be OK.
+		for (var i = 0; i < chars.Length; i++) {
+			if (!ALPHABET_VALUES.ContainsKey(chars[i])) {
+				return false; // invalid character!
+			}
+		}
+		return true; // It seems to be OK.
     }
 
     static string ToString(char[] alphabet, long number)
@@ -327,7 +321,7 @@ public sealed class SnowflakeId : EqualityComparer<SnowflakeId>
         chars[0x0b] = alphabet[(char)(number >>> 5) & 0b11111];
         chars[0x0c] = alphabet[(char)number & 0b11111];
 
-        return chars.ToString();
+        return new(chars);
     }
 
     private long GetTime() => _number >>> RANDOM_BITS;
