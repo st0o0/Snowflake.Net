@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Text;
 using DotNext.Threading;
 
 namespace Snowflake.Net;
@@ -129,25 +130,8 @@ public sealed class SnowflakeId : EqualityComparer<SnowflakeId>
 
     public static SnowflakeId From(string value)
     {
-        var chars = ToCharArray(value);
-
-        var number = 0L;
-
-        number |= ALPHABET_VALUES[chars[0x00]] << 60;
-        number |= ALPHABET_VALUES[chars[0x01]] << 55;
-        number |= ALPHABET_VALUES[chars[0x02]] << 50;
-        number |= ALPHABET_VALUES[chars[0x03]] << 45;
-        number |= ALPHABET_VALUES[chars[0x04]] << 40;
-        number |= ALPHABET_VALUES[chars[0x05]] << 35;
-        number |= ALPHABET_VALUES[chars[0x06]] << 30;
-        number |= ALPHABET_VALUES[chars[0x07]] << 25;
-        number |= ALPHABET_VALUES[chars[0x08]] << 20;
-        number |= ALPHABET_VALUES[chars[0x09]] << 15;
-        number |= ALPHABET_VALUES[chars[0x0a]] << 10;
-        number |= ALPHABET_VALUES[chars[0x0b]] << 5;
-        number |= ALPHABET_VALUES[chars[0x0c]];
-
-        return new(number);
+        var bytes = Convert.FromBase64String(value);
+        return From(bytes);
     }
 
     public static SnowflakeId Decode(string value, int number) => BaseN.Decode(value, number);
@@ -265,7 +249,7 @@ public sealed class SnowflakeId : EqualityComparer<SnowflakeId>
         return value._number == other._number;
     }
 
-    public override string ToString() => ToString(ALPHABET_UPPERCASE, _number);
+    public override string ToString() => Convert.ToBase64String(ToBytes());
 
     public override int GetHashCode(SnowflakeId obj)
     {
