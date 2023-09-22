@@ -6,14 +6,14 @@ public class SnowflakeFactory
 {
     private int _counter;
     private long _lastTime;
-    private int _node;
-    private int _nodeBits;
-    private int _counterBits;
-    private int _nodeMask;
-    private int _counterMask;
-    private long _customEpoch;
-    private Random _random;
-    private Lazy<long> _timeFunction;
+    private readonly int _node;
+    private readonly int _nodeBits;
+    private readonly int _counterBits;
+    private readonly int _nodeMask;
+    private readonly int _counterMask;
+    private readonly long _customEpoch;
+    private readonly Random _random;
+    private readonly Lazy<long> _timeFunction;
     private readonly int _randomBytes;
     static readonly int NODE_BITS_256 = 8;
     static readonly int NODE_BITS_1024 = 10;
@@ -56,56 +56,54 @@ public class SnowflakeFactory
 
     public static SnowflakeFactory NewInstance256()
     {
-        return SnowflakeFactory.GetBuilder().WithNodeBits(NODE_BITS_256).Build();
+        return GetBuilder().WithNodeBits(NODE_BITS_256).Build();
     }
 
     public static SnowflakeFactory NewInstance256(int node)
     {
-        return SnowflakeFactory.GetBuilder().WithNodeBits(NODE_BITS_256).WithNode(node).Build();
+        return GetBuilder().WithNodeBits(NODE_BITS_256).WithNode(node).Build();
     }
 
     public static SnowflakeFactory NewInstance1024()
     {
-        return SnowflakeFactory.GetBuilder().WithNodeBits(NODE_BITS_1024).Build();
+        return GetBuilder().WithNodeBits(NODE_BITS_1024).Build();
     }
 
     public static SnowflakeFactory NewInstance1024(int node)
     {
-        return SnowflakeFactory.GetBuilder().WithNodeBits(NODE_BITS_1024).WithNode(node).Build();
+        return GetBuilder().WithNodeBits(NODE_BITS_1024).WithNode(node).Build();
     }
 
     public static SnowflakeFactory NewInstance4096()
     {
-        return SnowflakeFactory.GetBuilder().WithNodeBits(NODE_BITS_4096).Build();
+        return GetBuilder().WithNodeBits(NODE_BITS_4096).Build();
     }
 
     public static SnowflakeFactory NewInstance4096(int node)
     {
-        return SnowflakeFactory.GetBuilder().WithNodeBits(NODE_BITS_4096).WithNode(node).Build();
+        return GetBuilder().WithNodeBits(NODE_BITS_4096).WithNode(node).Build();
     }
 
 
     public SnowflakeId Create()
     {
 
-        long _time = GetTime() << SnowflakeId.RANDOM_BITS;
-        long _node = (long)this._node << _counterBits;
-
-        long _counter = (long)this._counter & _counterMask;
+        var _time = GetTime() << SnowflakeId.RANDOM_BITS;
+        var _node = (long)this._node << _counterBits;
+        var _counter = (long)this._counter & _counterMask;
 
         return new SnowflakeId(_time | _node | _counter);
     }
 
     private long GetTime()
     {
+        var time = _timeFunction.Value;
 
-        long time = _timeFunction.Value;
-
-        if (time <= this._lastTime)
+        if (time <= _lastTime)
         {
             _counter++;
             // Carry is 1 if an overflow occurs after ++.
-            int carry = _counter >>> _counterBits;
+            var carry = _counter >>> _counterBits;
             _counter &= _counterMask;
             time = _lastTime + carry; // increment time
         }
@@ -125,7 +123,7 @@ public class SnowflakeFactory
 
     private int GetRandomCounter()
     {
-        byte[] bytes = new byte[_randomBytes];
+        var bytes = new byte[_randomBytes];
         _random.NextBytes(bytes);
         return bytes.Length switch
         {
@@ -139,97 +137,98 @@ public class SnowflakeFactory
 
     public class Builder
     {
-        private int node;
-        private int nodeBits;
-        private long customEpoch;
-        private Random random = new();
-        private Lazy<long> timeFunction;
+        private int _node;
+        private int _nodeBits;
+        private long _customEpoch;
+        private Random _random = new();
+        private Lazy<long> _timeFunction;
 
         public Builder WithNode(int value)
         {
-            node = value != 0 ? value : Settings.Create().Node;
+            _node = value != 0 ? value : Settings.Create().Node;
             return this;
         }
 
         public Builder WithNodeBits(int value)
         {
-            nodeBits = value;
+            _nodeBits = value;
             return this;
         }
 
         public Builder WithCustomEpoch(DateTimeOffset value)
         {
-            customEpoch = value.ToUnixTimeMilliseconds();
+            _customEpoch = value.ToUnixTimeMilliseconds();
             return this;
         }
 
         public Builder WithRandom(Random value)
         {
-            if (random != null)
+            if (_random != null)
             {
-                random = value;
+                _random = value;
             }
+
             return this;
         }
 
         public Builder WithRandomFunction(Lazy<int> value)
         {
-            random = new Random(value.Value);
+            _random = new Random(value.Value);
             return this;
         }
 
 
         public Builder WithDateTimeOffset(DateTimeOffset value)
         {
-            timeFunction = new Lazy<long>(() => value.ToUnixTimeMilliseconds());
+            _timeFunction = new Lazy<long>(() => value.ToUnixTimeMilliseconds());
             return this;
         }
 
 
         public Builder WithTimeFunction(Lazy<long> value)
         {
-            timeFunction = value;
+            _timeFunction = value;
             return this;
         }
 
         internal int GetNode()
         {
-            if (node < 0 || node > int.MaxValue)
+            if (_node < 0 || _node > int.MaxValue)
             {
-                throw new IndexOutOfRangeException(string.Format("Node ID out of range [0, %s]: %s", int.MaxValue, node));
+                throw new IndexOutOfRangeException(string.Format("Node ID out of range [0, %s]: %s", int.MaxValue, _node));
             }
 
-            return node;
+            return _node;
         }
 
         internal int GetNodeBits()
         {   
-            if (nodeBits < 0 || nodeBits > 20)
+            if (_nodeBits < 0 || _nodeBits > 20)
             {
-                throw new InvalidOperationException(string.Format("Node bits out of range [0, 20]: %s", nodeBits));
+                throw new InvalidOperationException(string.Format("Node bits out of range [0, 20]: %s", _nodeBits));
             }
 
-            return nodeBits;
+            return _nodeBits;
         }
 
-        internal long GetCustomEpoch() => customEpoch;
+        internal long GetCustomEpoch() => _customEpoch;
 
         internal Random GetRandom()
         {
-            if (random == null)
+            if (_random == null)
             {
                 this.WithRandom(new Random());
             }
-            return random;
+            return _random;
         }
 
         internal Lazy<long> GetTimeFunction()
         {
-            if (timeFunction == null)
+            if (_timeFunction == null)
             {
                 WithTimeFunction(new Lazy<long>(() => Internals.System.CurrentTimeMillis()));
             }
-            return timeFunction;
+            return _timeFunction;
         }
 
         public SnowflakeFactory Build() => new(this);
@@ -239,7 +238,7 @@ public class SnowflakeFactory
     {
         public static Settings Create() => new();
 
-        public static Settings Create(int node, int nodeCount) => new(node);
+        public static Settings Create(int node) => new(node);
 
         internal Settings() { }
 

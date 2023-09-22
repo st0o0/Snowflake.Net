@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/src/NumberPlateGenerator.Net.Core.Test/NumberPlateGenerator.Net.Core.Test.csproj",
+                "${workspaceFolder}/src/Snowflake.Net.Test/Snowflake.Net.Test.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -19,7 +19,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/src/NumberPlateGenerator.Net.Core.Test/NumberPlateGenerator.Net.Core.Test.csproj",
+                "${workspaceFolder}/src/Snowflake.Net.Test/Snowflake.Net.Test.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -33,7 +33,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/src/NumberPlateGenerator.Net.Core.Test/NumberPlateGenerator.Net.Core.Test.csproj"
+                "${workspaceFolder}/src/Snowflake.Net.Test/Snowflake.Net.Test.csproj"
             ],
             "problemMatcher": "$msCompile"
         }

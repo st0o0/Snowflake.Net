@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Snowflake.Net;
+﻿namespace Snowflake.Net;
 
 public class SnowflakeCreator
 {
