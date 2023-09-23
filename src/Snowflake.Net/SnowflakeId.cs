@@ -3,16 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
-using System.Text;
 using DotNext.Threading;
 
 namespace Snowflake.Net;
 
 [Serializable]
-public sealed class SnowflakeId : EqualityComparer<SnowflakeId>
+public sealed partial class SnowflakeId : EqualityComparer<SnowflakeId>
 {
-    private static readonly long serialVersionUID = -5446820982139116297L;
-    private readonly long _number;
+    private readonly long _number = 0L;
     private static int _atomic = new Random().Next();
     internal static readonly int TSID_BYTES = 8;
     internal static readonly int TSID_CHARS = 13;
@@ -138,8 +136,8 @@ public sealed class SnowflakeId : EqualityComparer<SnowflakeId>
 
     public static SnowflakeId Fast()
     {
-        var time = (Internals.System.CurrentTimeMillis() - TSID_EPOCH) << RANDOM_BITS;
-        var tail = (long)AtomicInt32.IncrementAndGet(ref _atomic) & RANDOM_MASK;
+        var time = Internals.System.CurrentTimeMillis() - TSID_EPOCH << RANDOM_BITS;
+        var tail = (long)_atomic.IncrementAndGet() & RANDOM_MASK;
         return new SnowflakeId(time | tail);
     }
 
@@ -176,7 +174,7 @@ public sealed class SnowflakeId : EqualityComparer<SnowflakeId>
             var i = format.IndexOf("%");
             if (i < 0 || i == format.Length - 1)
             {
-                throw new InvalidOperationException(string.Format("Invalid format string: \"%s\"", format));
+                throw new InvalidOperationException(string.Format($"Invalid format string: {format}"));
             }
 
             var head = format[..i];
@@ -196,11 +194,11 @@ public sealed class SnowflakeId : EqualityComparer<SnowflakeId>
                 'd' => head + BaseN.Encode(this, 10) + tail,
                 // base-62
                 'z' => head + BaseN.Encode(this, 62) + tail,
-                _ => throw new InvalidOperationException(string.Format("Invalid placeholder: \"%%%s\"", placeholder)),
+                _ => throw new InvalidOperationException(string.Format($"Invalid placeholder: {placeholder}")),
             };
         }
 
-        throw new InvalidOperationException(string.Format("Invalid format string: \"%s\"", format));
+        throw new InvalidOperationException(string.Format($"Invalid format string: {format}"));
     }
 
     public static SnowflakeId Unformat(string formatted, string format)
@@ -210,7 +208,7 @@ public sealed class SnowflakeId : EqualityComparer<SnowflakeId>
             var i = format.IndexOf("%");
             if (i < 0 || i == format.Length - 1)
             {
-                throw new InvalidOperationException(string.Format("Invalid format string: \"%s\"", format));
+                throw new InvalidOperationException(string.Format($"Invalid format string: {format}"));
             }
 
             var head = format[..i];
@@ -233,7 +231,7 @@ public sealed class SnowflakeId : EqualityComparer<SnowflakeId>
                     'd' => BaseN.Decode(formatted.Substring(i, i + length), 10),
                     // base-62
                     'z' => BaseN.Decode(formatted.Substring(i, i + length), 62),
-                    _ => throw new InvalidOperationException(message: string.Format("Invalid placeholder: \"%%%s\"", placeholder)),
+                    _ => throw new InvalidOperationException(string.Format($"Invalid placeholder: {placeholder}")),
                 };
             }
         }
@@ -268,23 +266,27 @@ public sealed class SnowflakeId : EqualityComparer<SnowflakeId>
 
     static bool IsValidCharArray(char[] chars)
     {
-        
-		if (chars == null || chars.Length != TSID_CHARS) {
-			return false; // null or wrong size!
-		}
 
-		// The extra bit added by base-32 encoding must be zero
-		// As a consequence, the 1st char of the input string must be between 0 and F.
-		if ((ALPHABET_VALUES[chars[0]] & 0b10000) != 0) {
-			return false; // overflow!
-		}
+        if (chars == null || chars.Length != TSID_CHARS)
+        {
+            return false; // null or wrong size!
+        }
 
-		for (var i = 0; i < chars.Length; i++) {
-			if (!ALPHABET_VALUES.ContainsKey(chars[i])) {
-				return false; // invalid character!
-			}
-		}
-		return true; // It seems to be OK.
+        // The extra bit added by base-32 encoding must be zero
+        // As a consequence, the 1st char of the input string must be between 0 and F.
+        if ((ALPHABET_VALUES[chars[0]] & 0b10000) != 0)
+        {
+            return false; // overflow!
+        }
+
+        for (var i = 0; i < chars.Length; i++)
+        {
+            if (!ALPHABET_VALUES.ContainsKey(chars[i]))
+            {
+                return false; // invalid character!
+            }
+        }
+        return true; // It seems to be OK.
     }
 
     static string ToString(char[] alphabet, long number)
@@ -378,7 +380,7 @@ public sealed class SnowflakeId : EqualityComparer<SnowflakeId>
                 }
 
                 last = x;
-                x = (x * baseN) + plus;
+                x = x * baseN + plus;
             }
 
             // finally, check if happened an overflow
