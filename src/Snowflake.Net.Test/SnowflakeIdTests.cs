@@ -1,6 +1,4 @@
-﻿using Xunit;
-
-namespace Snowflake.Net.Test;
+﻿namespace Snowflake.Net.Test;
 
 public class SnowflakeIdTests
 {
@@ -40,6 +38,7 @@ public class SnowflakeIdTests
     {
         var idOne = SnowflakeFactory.NewInstance256().Create();
         var value = idOne.ToString();
+        Assert.Equal(13, value.Length);
         Assert.IsType<string>(value);
         var result = SnowflakeId.From(value);
         Assert.Equal(idOne.ToLong(), result.ToLong());

@@ -2,21 +2,13 @@
 
 public class SnowflakeCreator
 {
-	public static SnowflakeId GetSnowflakeId() {
-		return FactoryHolder.INSTANCE.Create();
-	}
+	public static SnowflakeId GetSnowflakeId() => FactoryHolder.INSTANCE.Create();
 
-	public static SnowflakeId GetSnowflakeId256() {
-		return Factory256Holder.INSTANCE.Create();
-	}
+	public static SnowflakeId GetSnowflakeId256() => Factory256Holder.INSTANCE.Create();
 
-	public static SnowflakeId GetSnowflakeId1024() {
-		return Factory1024Holder.INSTANCE.Create();
-	}
+	public static SnowflakeId GetSnowflakeId1024() => Factory1024Holder.INSTANCE.Create();
 
-	public static SnowflakeId GetSnowflakeId4096() {
-		return Factory4096Holder.INSTANCE.Create();
-	}
+	public static SnowflakeId GetSnowflakeId4096() => Factory4096Holder.INSTANCE.Create();
 
 	private static class FactoryHolder {
 		internal static readonly SnowflakeFactory INSTANCE = new();

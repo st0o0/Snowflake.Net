@@ -195,17 +195,17 @@ public class SnowflakeFactory
         {
             if (_node < 0 || _node > int.MaxValue)
             {
-                throw new IndexOutOfRangeException(string.Format("Node ID out of range [0, %s]: %s", int.MaxValue, _node));
+                throw new IndexOutOfRangeException($"Node ID out of range [0, {int.MaxValue}]: {_node}");
             }
 
             return _node;
         }
 
         internal int GetNodeBits()
-        {   
+        {
             if (_nodeBits < 0 || _nodeBits > 20)
             {
-                throw new InvalidOperationException(string.Format("Node bits out of range [0, 20]: %s", _nodeBits));
+                throw new InvalidOperationException($"Node bits out of range [0, 20]: {_nodeBits}");
             }
 
             return _nodeBits;
