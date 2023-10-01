@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Snowflake.Net.Internals;
+﻿namespace Snowflake.Net.Internals;
 
 internal static class System
 {
