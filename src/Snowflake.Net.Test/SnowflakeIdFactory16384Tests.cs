@@ -2,18 +2,17 @@
 
 namespace Snowflake.Net.Test;
 
-public class SnowflakeFactory04096Tests : SnowflakeIdFactory00000Tests
+public class SnowflakeIdFactory16384Tests : SnowflakeIdFactory00000Tests
 {
-    private const int NodeBits = 12;
-    private const int CounterBits = 10;
+    private const int NodeBits = 14;
+    private const int CounterBits = 8;
 
     private static readonly int NodeMax = (int)Math.Pow(2, NodeBits);
     private static readonly int CounterMax = (int)Math.Pow(2, CounterBits);
 
     [Fact]
-    public void TestGetSnowflakeId4096()
+    public void TestGetSnowflakeId16384()
     {
-
         var startTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
         var factory = SnowflakeFactory.GetBuilder().WithNodeBits(NodeBits).WithRandom(Random).Build();
@@ -34,12 +33,13 @@ public class SnowflakeFactory04096Tests : SnowflakeIdFactory00000Tests
     }
 
     [Fact]
-    public void TestGetSnowflakeId4096WithNode()
+    public void TestGetSnowflakeId16384WithNode()
     {
 
         var startTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
         var node = Random.NextInt(NodeMax);
+
         var factory = SnowflakeFactory.GetBuilder().WithNode(node).WithNodeBits(NodeBits).WithRandom(Random).Build();
 
         var list = new long[LoopMax];
@@ -58,7 +58,7 @@ public class SnowflakeFactory04096Tests : SnowflakeIdFactory00000Tests
     }
 
     [Fact]
-    public void TestGetSnowflakeIdString4096()
+    public void TestGetSnowflakeIdString16384()
     {
 
         var startTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -81,12 +81,13 @@ public class SnowflakeFactory04096Tests : SnowflakeIdFactory00000Tests
     }
 
     [Fact]
-    public void TestGetSnowflakeIdString4096WithNode()
+    public void TestGetSnowflakeIdString16384WithNode()
     {
 
         var startTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
         var node = Random.NextInt(NodeMax);
+
         var factory = SnowflakeFactory.GetBuilder().WithNode(node).WithNodeBits(NodeBits).WithRandom(Random).Build();
 
         var list = new string[LoopMax];
@@ -102,20 +103,20 @@ public class SnowflakeFactory04096Tests : SnowflakeIdFactory00000Tests
         CheckOrdering(list).Should().BeTrue();
         CheckMaximumPerMs(list, CounterMax).Should().BeTrue();
         CheckCreationTime(list, startTime, endTime).Should().BeTrue();
-
     }
 
     [Fact]
-    public void TestGetSnowflakeId4096Parallel()
+    public void TestGetSnowflakeId16384Parallel()
     {
         var sets = new ConcurrentDictionary<string, byte>[MultiplePasses];
+        var counterMax = CounterMax / MultiplePasses;
 
         // Instantiate and start many threads
         for (var i = 0; i < MultiplePasses; i++)
         {
             var factory = SnowflakeFactory.GetBuilder().WithNode(1).WithNodeBits(NodeBits).WithRandom(Random).Build();
             sets[i] = new ConcurrentDictionary<string, byte>();
-            Parallel.For(0, CounterMax, j =>
+            Parallel.For(0, counterMax, j =>
             {
                 sets[i].TryAdd(factory.Create().ToString(), 0);
             });
@@ -123,6 +124,6 @@ public class SnowflakeFactory04096Tests : SnowflakeIdFactory00000Tests
 
         // Check if the quantity of unique UUIDs is correct
         var sum = sets.Select(x => x.Count).Aggregate((a, b) => a + b);
-        (CounterMax * MultiplePasses).Should().Be(sum);
+        (counterMax * MultiplePasses).Should().Be(sum);
     }
 }
