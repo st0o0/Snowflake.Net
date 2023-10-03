@@ -11,11 +11,11 @@ public class SnowflakeFactory
     private readonly int _counterMask;
     private readonly long _customEpoch;
     private readonly IRandom _random;
-    private readonly Lazy<long> _timeFunction;
+    private readonly TimeZoneInfo _timeZoneInfo;
     private readonly int _randomBytes;
-    static readonly int NODE_BITS_256 = 8;
-    static readonly int NODE_BITS_1024 = 10;
-    static readonly int NODE_BITS_4096 = 12;
+    internal static readonly int NODE_BITS_256 = 8;
+    internal static readonly int NODE_BITS_1024 = 10;
+    internal static readonly int NODE_BITS_4096 = 12;
 
     private readonly object _lock = new();
     private readonly object _lock2 = new();
@@ -37,7 +37,7 @@ public class SnowflakeFactory
         _customEpoch = builder.GetCustomEpoch();
         _nodeBits = builder.GetNodeBits();
         _random = builder.GetRandom();
-        _timeFunction = builder.GetTimeFunction();
+        _timeZoneInfo = builder.GetTimeZoneInfo();
 
         // setup constants that depend on node bits
         _counterBits = SnowflakeId.RANDOM_BITS - _nodeBits;
@@ -83,7 +83,7 @@ public class SnowflakeFactory
 
     private long GetTime()
     {
-        var time = _timeFunction.Value;
+        var time = DateTimeOffset.UtcNow.ToOffset(_timeZoneInfo.BaseUtcOffset).ToUnixTimeMilliseconds();
 
         if (time <= _lastTime)
         {

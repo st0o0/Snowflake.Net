@@ -1,9 +1,10 @@
-﻿namespace Snowflake.Net;
+﻿using Snowflake.Net.Internals;
+
+namespace Snowflake.Net;
 
 public sealed partial class SnowflakeId
 {
     public static SnowflakeId From(long number) => new(number);
-
     public static SnowflakeId From(byte[] bytes)
     {
         if (bytes == null || bytes.Length != SNOWFLAKEID_BYTES)
@@ -24,7 +25,6 @@ public sealed partial class SnowflakeId
 
         return From(number);
     }
-
     public static SnowflakeId From(string str)
     {
         var chars = ToCharArray(str);
@@ -47,16 +47,13 @@ public sealed partial class SnowflakeId
 
         return From(number);
     }
-
-    public static SnowflakeId Decode(string value, int number) => BaseN.Decode(value, number);
-
+    public static SnowflakeId Decode(string value, int number) => number < 2 || number > 62 ? throw new ArgumentException($"Invalid base: {value}") : BaseN.Decode(value, number);
     public static SnowflakeId Fast()
     {
         var time = Internals.System.CurrentTimeMillis() - SNOWFLAKEID_EPOCH << RANDOM_BITS;
         var tail = (long)LazyHolder.IncrementAndGet() & RANDOM_MASK;
         return From(time | tail);
     }
-
     public static SnowflakeId Unformat(string formatted, string format)
     {
         if (formatted != null && format != null)
@@ -93,5 +90,58 @@ public sealed partial class SnowflakeId
         }
 
         throw new ArgumentException($"Invalid formatted string: \"{formatted}\"");
+    }
+    public static bool IsValid(string str) => str != null && IsValidCharArray(str.ToCharArray());
+    private static char[] ToCharArray(string value)
+    {
+        var chars = value.ToCharArray();
+        if (!IsValidCharArray(chars))
+        {
+            throw new InvalidOperationException($"Invalid SNOWFLAKEID string: {value}");
+        }
+
+        return chars;
+    }
+    private static bool IsValidCharArray(char[] chars)
+    {
+        if (chars == null || chars.Length != SNOWFLAKEID_CHARS)
+        {
+            return false;
+        }
+
+        if ((AlphabetValues[chars[0]] & 0b10000) != 0)
+        {
+            return false;
+        }
+
+        for (var i = 0; i < chars.Length; i++)
+        {
+            if (AlphabetValues[chars[i]] == -1)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    private static string ToString(char[] alphabet, long number)
+    {
+        var chars = new char[SNOWFLAKEID_CHARS];
+
+        chars[0x00] = alphabet[(char)(number >>> 60) & 0b11111];
+        chars[0x01] = alphabet[(char)(number >>> 55) & 0b11111];
+        chars[0x02] = alphabet[(char)(number >>> 50) & 0b11111];
+        chars[0x03] = alphabet[(char)(number >>> 45) & 0b11111];
+        chars[0x04] = alphabet[(char)(number >>> 40) & 0b11111];
+        chars[0x05] = alphabet[(char)(number >>> 35) & 0b11111];
+        chars[0x06] = alphabet[(char)(number >>> 30) & 0b11111];
+        chars[0x07] = alphabet[(char)(number >>> 25) & 0b11111];
+        chars[0x08] = alphabet[(char)(number >>> 20) & 0b11111];
+        chars[0x09] = alphabet[(char)(number >>> 15) & 0b11111];
+        chars[0x0a] = alphabet[(char)(number >>> 10) & 0b11111];
+        chars[0x0b] = alphabet[(char)(number >>> 5) & 0b11111];
+        chars[0x0c] = alphabet[(char)number & 0b11111];
+
+        return new(chars);
     }
 }

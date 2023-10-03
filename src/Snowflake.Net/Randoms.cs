@@ -7,7 +7,7 @@ public interface IRandom
     public byte[] NextBytes(int length);
 }
 
-public class IntRandom : IRandom
+public sealed class IntRandom : IRandom
 {
     private readonly Func<int> _randomFunction;
 
@@ -57,7 +57,7 @@ public class IntRandom : IRandom
     }
 }
 
-public class ByteRandom : IRandom
+public sealed class ByteRandom : IRandom
 {
     private readonly Func<int, byte[]> _randomFunction;
 
@@ -94,6 +94,6 @@ public class ByteRandom : IRandom
     private static Func<int, byte[]> NewRandomFunction(RandomGenerators randoms)
     {
         var entropy = randoms ?? RandomGenerators.OfCryptographicallySecureRandom();
-        return length => entropy.NextBytes(length);
+        return entropy.NextBytes;
     }
 }

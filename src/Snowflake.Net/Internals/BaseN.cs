@@ -5,61 +5,54 @@ namespace Snowflake.Net;
 
 internal static class BaseN
 {
-    static readonly BigInteger MAX = BigInteger.Subtract(BigInteger.Pow(new BigInteger(2), 64), BigInteger.One);
-    static readonly string ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"; // base-62
+    private static readonly BigInteger Max = BigInteger.Parse("18446744073709551616");
+    private const string Alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"; // base-62
 
-    internal static string Encode(SnowflakeId snowflakeId, int baseN)
+    public static string Encode(SnowflakeId tsid, int @base)
     {
         const int longSize = 64;
-        var x = snowflakeId.ToBytes().ToUnsignedBigEndianBigInteger();
-        var radix = BigInteger.Parse(baseN.ToString());
-        var length = (int)Math.Ceiling(longSize / (Math.Log(baseN) / Math.Log(2)));
+        var x = tsid.ToBytes().ToUnsignedBigEndianBigInteger();
+        var radix = BigInteger.Parse(@base.ToString());
+        var length = (int)Math.Ceiling(longSize / (Math.Log(@base) / Math.Log(2)));
         var b = length;
         var buffer = new char[length];
         while (x.CompareTo(BigInteger.Zero) > 0)
         {
             var quotient = BigInteger.DivRem(x, radix, out var remainder);
-            buffer[--b] = ALPHABET[(int)(uint)(remainder & uint.MaxValue)];
+            buffer[--b] = Alphabet[(int)(uint)(remainder & uint.MaxValue)];
             x = quotient;
         }
-
         while (b > 0)
-        {
             buffer[--b] = '0';
-        }
-
         return new string(buffer);
     }
 
-    internal static SnowflakeId Decode(string value, int baseN)
+    public static SnowflakeId Decode(string str, int @base)
     {
-
         var x = BigInteger.Zero;
-        var length = (int)Math.Ceiling(64 / (Math.Log(baseN) / Math.Log(2)));
-        if (value == null)
+        var length = (int)Math.Ceiling(64 / (Math.Log(@base) / Math.Log(2)));
+        if (str == null)
         {
-            throw new ArgumentException($"Invalid base-{baseN} string: null");
+            throw new ArgumentException($"Invalid base-{@base} string: null");
         }
-
-        if (value.Length != length)
+        if (str.Length != length)
         {
-            throw new ArgumentException($"Invalid base-{baseN} length: {value.Length}");
+            throw new ArgumentException($"Invalid base-{@base} length: {str.Length}");
         }
-
-        for (var i = 0; i < value.Length; i++)
+        for (var i = 0; i < str.Length; i++)
         {
-            long plus = ALPHABET.IndexOf(value[i]);
-            if (plus < 0 || plus >= baseN)
+            long plus = Alphabet.IndexOf(str[i]);
+            if (plus < 0 || plus >= @base)
             {
-                throw new ArgumentException($"Invalid base-{baseN} character: {value[i]}");
+                throw new ArgumentException($"Invalid base-{@base} character: {str[i]}");
             }
 
-            x = x * baseN + new BigInteger(plus);
+            // x = BigInteger.Add(BigInteger.Multiply(x,radix),BigInteger.Parse(plus.ToString()));
+            x = x * @base + new BigInteger(plus);
         }
-
-        if (x.CompareTo(MAX) > 0)
+        if (x.CompareTo(Max) > 0)
         {
-            throw new ArgumentException($"Invalid base-{baseN} value (overflow): {x}");
+            throw new ArgumentException($"Invalid base-{@base} value (overflow): {x}");
         }
 
         var number = (long)(ulong)(x & ulong.MaxValue);

@@ -2,27 +2,27 @@
 
 public class Builder
 {
-    private int _node;
-    private int _nodeBits;
-    private long _customEpoch;
+    private int? _node;
+    private int? _nodeBits;
+    private long? _customEpoch;
     private IRandom _random;
-    private Lazy<long> _timeFunction;
+    private TimeZoneInfo _timeZoneInfo;
 
-    public Builder WithNode(int value)
+    public Builder WithNode(int node)
     {
-        _node = value != 0 ? value : EnvironmentSettings.GetNode() ?? _random.NextInt() & (1 << _nodeBits) - 1;
+        _node = node;
         return this;
     }
 
-    public Builder WithNodeBits(int value)
+    public Builder WithNodeBits(int nodeBits)
     {
-        _nodeBits = value != 0 ? value : EnvironmentSettings.GetNodeCount() ?? 10;
+        _nodeBits = nodeBits;
         return this;
     }
 
-    public Builder WithCustomEpoch(DateTimeOffset value)
+    public Builder WithCustomEpoch(DateTimeOffset customEpoch)
     {
-        _customEpoch = value.ToUnixTimeMilliseconds();
+        _customEpoch = customEpoch.ToUnixTimeMilliseconds();
         return this;
     }
 
@@ -43,16 +43,6 @@ public class Builder
         return this;
     }
 
-    public Builder WithRandom(IRandom value)
-    {
-        if (_random != null)
-        {
-            _random = value;
-        }
-
-        return this;
-    }
-
     public Builder WithRandomFunction(Func<int> randomFunction)
     {
         _random = new IntRandom(randomFunction);
@@ -65,42 +55,90 @@ public class Builder
         return this;
     }
 
-    public Builder WithDateTimeOffset(DateTimeOffset value)
+    public Builder WithClock(TimeZoneInfo info)
     {
-        _timeFunction = new Lazy<long>(value.ToUnixTimeMilliseconds);
+        _timeZoneInfo = info;
         return this;
     }
 
-
-    public Builder WithTimeFunction(Lazy<long> value)
+    public int GetNode()
     {
-        _timeFunction = value;
-        return this;
-    }
+        var max = (1 << _nodeBits) - 1;
 
-    internal int GetNode()
-    {
-        if (_node < 0 || _node > int.MaxValue)
+        if (!_node.HasValue)
         {
-            throw new IndexOutOfRangeException($"Node ID out of range [0, {int.MaxValue}]: {_node}");
+            if (EnvironmentSettings.GetNode().HasValue)
+            {
+                // use property or variable
+                _node = EnvironmentSettings.GetNode();
+            }
+            else
+            {
+                if (_nodeBits == 0)
+                {
+                    _node = 0;
+                }
+                else
+                {
+                    // use random node identifier
+                    var value = _random.NextInt();
+                    _node = (int)Math.Min((uint)value, (uint)max);
+                }
+            }
         }
 
-        return _node;
+        if (_node < 0 || _node > max)
+        {
+            throw new ArgumentException($"Node ID out of range [0, {max}]: {_node}");
+        }
+
+        return (int)_node;
     }
 
-    internal int GetNodeBits()
+    /// <summary>
+    ///  Get the node identifier bits length within the range 0 to 20.
+    /// <returns> a number </returns>
+    /// <exception cref="ArgumentException"> throws if the node bits are out of range </exception>
+    /// </summary>
+    public int GetNodeBits()
     {
+        if (!_nodeBits.HasValue)
+        {
+            if (EnvironmentSettings.GetNodeCount().HasValue)
+            {
+                // use property or variable
+                _nodeBits = (int)Math.Ceiling(Math.Log((double)EnvironmentSettings.GetNodeCount()) / Math.Log(2));
+            }
+            else
+            {
+                // use default bit length: 10 bits
+                _nodeBits = SnowflakeFactory.NODE_BITS_1024;
+            }
+        }
+
         if (_nodeBits < 0 || _nodeBits > 20)
         {
-            throw new InvalidOperationException($"Node bits out of range [0, 20]: {_nodeBits}");
+            throw new ArgumentException($"Node bits out of range [0, 20]: {_nodeBits}");
         }
 
-        return _nodeBits;
+        return (int)_nodeBits;
     }
 
-    internal long GetCustomEpoch() => _customEpoch;
+    /// <summary>
+    /// Gets the custom epoch.
+    /// <returns> a number </returns>
+    /// </summary>
+    public long GetCustomEpoch()
+    {
+        _customEpoch ??= SnowflakeId.SNOWFLAKEID_EPOCH; // 2023-01-01
+        return (long)_customEpoch;
+    }
 
-    internal IRandom GetRandom()
+    /// <summary>
+    /// Gets the random generator.
+    /// <returns> a random generator </returns>
+    /// </summary>
+    public IRandom GetRandom()
     {
         if (_random == null)
         {
@@ -110,15 +148,23 @@ public class Builder
         return _random;
     }
 
-    internal Lazy<long> GetTimeFunction()
+    /// <summary>
+    /// <returns><see cref="TimeZoneInfo"/> </returns>
+    /// </summary>
+    public TimeZoneInfo GetTimeZoneInfo()
     {
-        if (_timeFunction == null)
-        {
-            WithTimeFunction(new Lazy<long>(() => Internals.System.CurrentTimeMillis()));
-        }
-
-        return _timeFunction;
+        _timeZoneInfo ??= TimeZoneInfo.Utc;
+        return _timeZoneInfo;
     }
 
-    public SnowflakeFactory Build() => new SnowflakeFactory(this);
+    /// <summary>
+    /// Returns a build SnowflakeId factory.
+    /// <returns> a <see cref="SnowflakeFactory"/> </returns>
+    /// <exception cref="ArgumentException"> throws if the node is out of range </exception>
+    /// <exception cref="ArgumentException"> throws if if the node is out of range</exception>
+    /// </summary>
+    public SnowflakeFactory Build()
+    {
+        return new SnowflakeFactory(this);
+    }
 }
