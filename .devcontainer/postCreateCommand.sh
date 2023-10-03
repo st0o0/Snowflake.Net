@@ -10,4 +10,4 @@ wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
 
 chmod +x ./dotnet-install.sh
 
-./dotnet-install.sh --channel 7.0 --install-dir /usr/local/dotnet/current
+./dotnet-install.sh --channel 2.0 --install-dir /usr/local/dotnet/current
