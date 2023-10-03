@@ -74,18 +74,14 @@ public class Builder
             }
             else
             {
-                if (_nodeBits == 0)
-                {
-                    _node = 0;
-                }
-                else
-                {
-                    // use random node identifier
-                    var value = _random.NextInt();
-                    _node = (int)Math.Min((uint)value, (uint)max);
-                }
+                // use random node identifier
+                var value = _random.NextInt();
+                _node = (int)Math.Min((uint)value, (uint)max);
             }
         }
+
+        if (_nodeBits == 0)
+            _node = 0;
 
         if (_node < 0 || _node > max)
         {

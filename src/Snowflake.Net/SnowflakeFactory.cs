@@ -20,8 +20,6 @@ public class SnowflakeFactory
     private readonly object _lock = new();
     private readonly object _lock2 = new();
 
-    static readonly Builder Instance = new();
-
     public SnowflakeFactory() : this(GetBuilder())
     {
     }
@@ -129,5 +127,5 @@ public class SnowflakeFactory
         }
     }
 
-    public static Builder GetBuilder() => Instance;
+    public static Builder GetBuilder() => new();
 }
