@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using Snowflake.Net.Internals;
-
-namespace Snowflake.Net;
+﻿namespace Snowflake.Net;
 
 [Serializable]
 public sealed partial class SnowflakeId : IEquatable<SnowflakeId>, IComparable<SnowflakeId>, IComparable
