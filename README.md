@@ -25,22 +25,22 @@ in terms of usage and performance.
 
 ## Usage
 
-Create a TSID:
+Create a SNOWFLAKEID:
 
 ```csharp
-Tsid tsid = TsidCreator.GetTsid();
+SnowflakeId snowflakeId = SnowflakeCreator.GetSnowflakeId();
 ```
 
-Create a TSID as `long`:
+Create a SNOWFLAKEID as `long`:
 
 ```csharp
-long number = TsidCreator.GetTsid().ToLong(); // 38352658567418872
+long number = SnowflakeCreator.GetSnowflakeId().ToLong(); // 38352658567418872
 ```
 
-Create a TSID as `String`:
+Create a SNOWFLAKEID as `String`:
 
 ```csharp
-string string = TsidCreator.GetTsid().ToString(); // 01226N0640J7Q
+string string = SnowflakeCreator.GetSnowflakeId().ToString(); // 01226N0640J7Q
 ```
 
-The TSID generator is [thread-safe](https://en.wikipedia.org/wiki/Thread_safety).
+The SNOWFLAKEID generator is [thread-safe](https://en.wikipedia.org/wiki/Thread_safety).
