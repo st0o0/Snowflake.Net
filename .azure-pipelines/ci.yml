@@ -6,7 +6,7 @@ trigger:
       - gh-pages
   paths:
     exclude:
-      - '.github'
+      - .github
       - docs
       - CHANGELOG.md
       - CONTRIBUTING.md
@@ -15,8 +15,6 @@ pr:
   branches:
     include:
       - dev
-    exclude:
-      - master
   autoCancel: true
   drafts: false
 
