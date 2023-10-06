@@ -3,11 +3,11 @@ trigger:
   branches:
     include:
       - master
+      - dev
   paths:
     exclude:
       - '.github'
       - docs
-      - README.md
       - CHANGELOG.md
       - CONTRIBUTING.md
 
@@ -148,7 +148,7 @@ stages:
               displayName: Publish CI package to Nuget.org
               inputs:
                 command: 'push'
-                packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+                packagesToPush: $(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg
                 nuGetFeedType: 'external'
                 publishFeedCredentials: 'Nuget.org'
           

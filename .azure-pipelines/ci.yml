@@ -7,7 +7,6 @@ trigger:
     exclude:
       - '.github'
       - docs
-      - README.md
       - CHANGELOG.md
       - CONTRIBUTING.md
 
@@ -126,6 +125,7 @@ stages:
           - checkout: none
           - download: current
             artifact: packages
+
           - task: UseDotNet@2
             displayName: Install .NET sdk
             inputs:
