@@ -1,8 +1,9 @@
 trigger:
   batch: true
   branches:
-    - master
-    - dev
+    include:
+      - master
+      - dev
   paths:
     exclude:
       - .github
