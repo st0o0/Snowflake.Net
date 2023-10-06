@@ -1,9 +1,14 @@
 {
-	"image": "mcr.microsoft.com/devcontainers/universal:2",
+	"name": "Snowflake.Net",
+	"service": "devhost",
+	"remoteUser": "root",
+	"postCreateCommand": "sh ./.devcontainer/postCreateCommand.sh",
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"github.vscode-github-actions"
+				"ms-dotnettools.csharp",
+				"ms-dotnettools.csdevkit",
+				"mhutchie.git-graph"
 			]
 		}
 	}
