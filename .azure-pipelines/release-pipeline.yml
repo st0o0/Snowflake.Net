@@ -1,16 +1,13 @@
 trigger:
   batch: true
   branches:
-    include:
-      - master
+    - master
   paths:
     exclude:
-      - '.github'
+      - .github
       - docs
       - CHANGELOG.md
       - CONTRIBUTING.md
-
-pr: none
 
 variables:
   - template: variables.yml
