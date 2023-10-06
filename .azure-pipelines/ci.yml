@@ -1,4 +1,5 @@
 trigger:
+  batch: true
   branches:
     exclude:
       - master
@@ -14,6 +15,8 @@ pr:
   branches:
     include:
       - dev
+    exclude:
+      - master
   autoCancel: true
   drafts: false
 
