@@ -8,6 +8,7 @@
 *.suo
 *.user
 *.userosscache
+*dotnet-install.sh
 *.sln.docstates
 
 # User-specific files (MonoDevelop/Xamarin Studio)

@@ -3,15 +3,13 @@ trigger:
   branches:
     include:
       - master
+      - dev
   paths:
     exclude:
-      - '.github'
+      - .github
       - docs
-      - README.md
       - CHANGELOG.md
       - CONTRIBUTING.md
-
-pr: none
 
 variables:
   - template: variables.yml
@@ -138,15 +136,17 @@ stages:
               displayName: Publish CI package to Azure artifacts
               inputs:
                 command: 'push'
-                packagesToPush: $(Pipeline.Workspace)/packages/*.*upkg
+                packagesToPush: $(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg
                 nuGetFeedType: 'internal'
                 vstsFeed: $(internalFeedName)
                 publishVstsFeed: $(internalFeedName)
                 allowPackageConflicts: true
+
             - task: NuGetCommand@2
+              displayName: Publish CI package to Nuget.org
               inputs:
                 command: 'push'
-                packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+                packagesToPush: $(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg
                 nuGetFeedType: 'external'
                 publishFeedCredentials: 'Nuget.org'
           
@@ -156,9 +156,9 @@ stages:
                 action: create
                 target: $(Build.SourceVersion)
                 tagSource: manual
-                tag: v$(GitVersion.NuGetVersion)
-                tagPattern: v$(GitVersion.NuGetVersion)
-                title: v$(GitVersion.NuGetVersion)
+                tag: $(GitVersion.NuGetVersion)
+                tagPattern: $(GitVersion.NuGetVersion)
+                title: $(GitVersion.NuGetVersion)
                 githubConnection: githubRelease
                 repositoryName: $(Build.Repository.Name)
                 isPreRelease: false

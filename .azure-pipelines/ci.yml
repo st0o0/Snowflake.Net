@@ -1,13 +1,13 @@
 trigger:
+  batch: true
   branches:
     exclude:
       - master
       - gh-pages
   paths:
     exclude:
-      - '.github'
+      - .github
       - docs
-      - README.md
       - CHANGELOG.md
       - CONTRIBUTING.md
 
@@ -126,6 +126,7 @@ stages:
           - checkout: none
           - download: current
             artifact: packages
+
           - task: UseDotNet@2
             displayName: Install .NET sdk
             inputs:
@@ -139,7 +140,7 @@ stages:
             displayName: Publish CI package to Azure artifacts
             inputs:
               command: 'push'
-              packagesToPush: $(Pipeline.Workspace)/packages/*.*upkg
+              packagesToPush: $(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg
               nuGetFeedType: 'internal'
               vstsFeed: $(internalFeedName)
               publishVstsFeed: $(internalFeedName)

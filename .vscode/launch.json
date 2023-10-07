@@ -10,9 +10,9 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/src/NumberPlateGenerator.Net.Core.Test/bin/Debug/net7.0/NumberPlateGenerator.Net.Core.Test.dll",
+            "program": "${workspaceFolder}/src/Snowflake.Net.Test/bin/Debug/net7.0/Snowflake.Net.Test.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/src/NumberPlateGenerator.Net.Core.Test",
+            "cwd": "${workspaceFolder}/src/Snowflake.Net.Test",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "internalConsole",
             "stopAtEntry": false
