@@ -6,7 +6,7 @@ trigger:
       - gh-pages
   paths:
     exclude:
-      - '.github'
+      - .github
       - docs
       - CHANGELOG.md
       - CONTRIBUTING.md
@@ -15,8 +15,6 @@ pr:
   branches:
     include:
       - dev
-    exclude:
-      - master
   autoCancel: true
   drafts: false
 
@@ -142,7 +140,7 @@ stages:
             displayName: Publish CI package to Azure artifacts
             inputs:
               command: 'push'
-              packagesToPush: $(Pipeline.Workspace)/packages/*.*upkg
+              packagesToPush: $(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg
               nuGetFeedType: 'internal'
               vstsFeed: $(internalFeedName)
               publishVstsFeed: $(internalFeedName)
