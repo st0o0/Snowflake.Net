@@ -4,12 +4,8 @@ trigger:
     include:
       - master
       - dev
-  paths:
-    exclude:
-      - .github
-      - docs
-      - CHANGELOG.md
-      - CONTRIBUTING.md
+
+pr: none
 
 variables:
   - template: variables.yml
@@ -136,7 +132,7 @@ stages:
               displayName: Publish CI package to Azure artifacts
               inputs:
                 command: 'push'
-                packagesToPush: $(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg
+                packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
                 nuGetFeedType: 'internal'
                 vstsFeed: $(internalFeedName)
                 publishVstsFeed: $(internalFeedName)
@@ -146,7 +142,7 @@ stages:
               displayName: Publish CI package to Nuget.org
               inputs:
                 command: 'push'
-                packagesToPush: $(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg
+                packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
                 nuGetFeedType: 'external'
                 publishFeedCredentials: 'Nuget.org'
           
