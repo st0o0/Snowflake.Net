@@ -28,7 +28,7 @@ stages:
       - template: templates/versioning.yml
         parameters:
           DependsOn:
-            - setup
+            - "setup"
 
       - template: templates/restore.yml
         parameters:
@@ -37,7 +37,7 @@ stages:
           BuildConfiguration: $(buildConfiguration)
           VstsFeed: $(internalFeedName)
           DependsOn:
-            - setup
+            - "setup"
 
       - template: templates/build.yml
         parameters:
@@ -45,7 +45,7 @@ stages:
           ProjectName: $(projectName)
           BuildConfiguration: $(buildConfiguration)
           DependsOn:
-            - restore
+            - "restore"
 
       - template: templates/pack.yml
         parameters:
@@ -53,14 +53,14 @@ stages:
           ProjectName: $(projectName)
           BuildConfiguration: $(buildConfiguration)
           DependsOn:
-            - build
+            - "build"
 
       - template: templates/test.yml
         parameters:
           ProjectName: $(projectName)
           BuildConfiguration: $(buildConfiguration)
           DependsOn:
-            - pack
+            - "pack"
 
       - template: templates/push.yml
         parameters:
@@ -69,4 +69,4 @@ stages:
           VstsFeed: $(internalFeedName)
           AllowPackageConflicts: true
           DependsOn:
-            - pack
+            - "test"
