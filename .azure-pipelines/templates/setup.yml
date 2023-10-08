@@ -1,14 +1,16 @@
 parameters:
   - name: DependsOn
-    default: []
+    type: object
+    default:
   - name: DotnetSdkVersion
     default: "netstandard2.0"
 
 jobs:
   - job: setup
     displayName: 💫 Setup
-    ${{ if ne(parameters.DependsOn, '')}}:
-      dependsOn: ${{ parameters.DependsOn }}
+    ${{ if ne(length(parameters.DependsOn), 0) }}:
+      dependsOn:
+        ${{ parameters.DependsOn }}
     steps:
       - checkout: self
         fetchDepth: 0
