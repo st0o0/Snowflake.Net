@@ -57,6 +57,11 @@ stages:
               versioningScheme: byEnvVar
               versionEnvVar: 'GitVersion.SemVer'
           
+          - task: PublishBuildArtifacts@1
+            displayName: 'publish dlls'
+            inputs:
+              ArtifactName: dlls
+
           - task: DotNetCoreCLI@2
             displayName: 'Create NuGet package'
             inputs:
@@ -79,6 +84,7 @@ stages:
         pool:
           vmImage: $(vmImage)
         steps:
+
           - task: UseDotNet@2
             displayName: Install .NET sdk
             inputs:
@@ -88,6 +94,7 @@ stages:
           - task: DotNetCoreCLI@2
             displayName: 'Run unit tests'
             inputs:
+              
               command: 'test'
               projects: '**/*.@(Test|Tests).csproj'
               arguments: >-

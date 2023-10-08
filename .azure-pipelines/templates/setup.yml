@@ -1,0 +1,31 @@
+parameters:
+  - name: DependsOn
+    default: ''
+  - name: DotnetSdkVersion
+    default: 'netstandard2.0'
+
+jobs:
+  - job: setup
+    displayName: 💫 Setup
+    ${{ if ne(parameters.DependsOn, '')}}:
+      dependsOn: ${{ parameters.DependsOn }}
+    steps:
+      - checkout: self
+        fetchDepth: 0
+        persistCredentials: true
+
+      - task: UseDotNet@2
+        displayName: Install .NET SDK
+        inputs:
+          packageType: sdk
+          version: ${{ parameters.DotnetSdkVersion }}
+
+      - task: gitversion/setup@0
+        displayName: "Setup git version"
+        inputs:
+          versionSpec: "5.x"
+
+      - task: gitversion/execute@0
+        displayName: "Calculate git version"
+        inputs:
+          additionalArguments: "/updateprojectfiles"

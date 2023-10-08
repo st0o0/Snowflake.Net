@@ -56,8 +56,10 @@ stages:
             displayName: 'Build projects [$(buildConfiguration)]'
             inputs:
               command: 'build'
+              noCache: true
               projects: '$(projectPath)'
               arguments: '--configuration $(buildConfiguration) --no-restore'
+
               versioningScheme: byEnvVar
               versionEnvVar: 'GitVersion.SemVer'
           

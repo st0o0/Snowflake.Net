@@ -1,0 +1,34 @@
+trigger:
+  batch: true
+  branches:
+    include:
+      - dev
+
+pr:
+  branches:
+    include:
+      - dev
+  autoCancel: true
+  drafts: false
+    
+variables:
+  - template: variables.yml
+
+stages:
+  - stage: TestStage
+    displayName: Sag mal bist du jetzt devops oder was?
+    pool:
+      vmImage: $(vmImage)
+
+    jobs:
+      - template: templates/setup.yml
+        parameters:
+          DotnetSdkVersion: $(netSdkVersion)
+          
+
+      - job: Build
+        displayName: 🚧 Build
+        steps:
+          - checkout: self
+            fetchDepth: 0
+            persistCredentials: true

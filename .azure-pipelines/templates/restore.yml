@@ -1,0 +1,23 @@
+parameters:
+  - name: DependsOn
+    default: ''
+  - name: InternalFeedName
+    default: ''
+  - name: ProjectPath
+    default: ''
+  - name: ProjectName
+    default: ''
+
+jobs:
+  - job: restore
+    displayName: ♻️ Restore NuGet dependencies for ${{ parameters.ProjectName}}
+    ${{ if ne(parameters.DependsOn, '')}}:
+      dependsOn: ${{ parameters.DependsOn }}
+    steps:
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: "restore"
+          projects: ${{ parameters.ProjectPath }}
+          feedsToUse: "select"
+          vstsFeed: ${{ parameters.InternalFeedName }}
+          includeNuGetOrg: true
