@@ -1,6 +1,6 @@
 parameters:
   - name: DependsOn
-    default: ""
+    default: []
   - name: ProjectPath
     default: ""
   - name: ProjectName

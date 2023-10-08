@@ -1,6 +1,6 @@
 parameters:
   - name: DependsOn
-    default: ""
+    default: []
 
 jobs:
   - job: versioning
