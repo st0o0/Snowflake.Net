@@ -6,7 +6,6 @@
     <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>true</IsPackable>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageId>SnowflakeId</PackageId>
     <Title>Snowflake.Net</Title>
     <Authors>st0o0</Authors>

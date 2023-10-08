@@ -1,0 +1,27 @@
+parameters:
+  - name: DependsOn
+    default: ""
+  - name: ProjectPath
+    default: ""
+  - name: ProjectName
+    default: ""
+  - name: BuildConfiguration
+    default: "Release"
+
+jobs:
+  - job: pack
+    displayName: 📦 Pack ${{ parameters.ProjectName }}
+    ${{ if ne(parameters.DependsOn, '')}}:
+      dependsOn: ${{ parameters.DependsOn }}
+    steps:
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: "pack"
+          packagesToPack: ${{ parameters.ProjectPath }}
+          versioningScheme: "byEnvVar"
+          versionEnvVar: "GitVersion.NuGetVersion"
+          packDirectory: $(Build.ArtifactStagingDirectory)/packages/
+          configuration: ${{ parameters.BuildConfiguration }}
+
+      - publish: $(Build.ArtifactStagingDirectory)/packages/
+        artifact: packages

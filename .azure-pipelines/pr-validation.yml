@@ -10,7 +10,7 @@ pr:
       - dev
   autoCancel: true
   drafts: false
-    
+
 variables:
   - template: variables.yml
 
@@ -24,11 +24,49 @@ stages:
       - template: templates/setup.yml
         parameters:
           DotnetSdkVersion: $(netSdkVersion)
-          
 
-      - job: Build
-        displayName: 🚧 Build
-        steps:
-          - checkout: self
-            fetchDepth: 0
-            persistCredentials: true
+      - template: templates/versioning.yml
+        parameters:
+          DependsOn:
+            - setup
+
+      - template: templates/restore.yml
+        parameters:
+          ProjectPath: $(projectPath)
+          ProjectName: $(projectName)
+          BuildConfiguration: $(buildConfiguration)
+          VstsFeed: $(internalFeedName)
+          DependsOn:
+            - setup
+
+      - template: templates/build.yml
+        parameters:
+          ProjectPath: $(projectPath)
+          ProjectName: $(projectName)
+          BuildConfiguration: $(buildConfiguration)
+          DependsOn:
+            - restore
+
+      - template: templates/pack.yml
+        parameters:
+          ProjectPath: $(projectPath)
+          ProjectName: $(projectName)
+          BuildConfiguration: $(buildConfiguration)
+          DependsOn:
+            - build
+
+      - template: templates/test.yml
+        parameters:
+          ProjectName: $(projectName)
+          BuildConfiguration: $(buildConfiguration)
+          DependsOn:
+            - pack
+
+      - template: templates/push.yml
+        parameters:
+          ProjectName: $(projectName)
+          NugetFeedType: "internal"
+          VstsFeed: $(internalFeedName)
+          AllowPackageConflicts: true
+          DependsOn:
+            - pack

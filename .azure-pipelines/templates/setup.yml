@@ -1,8 +1,8 @@
 parameters:
   - name: DependsOn
-    default: ''
+    default: ""
   - name: DotnetSdkVersion
-    default: 'netstandard2.0'
+    default: "netstandard2.0"
 
 jobs:
   - job: setup
@@ -26,6 +26,9 @@ jobs:
           versionSpec: "5.x"
 
       - task: gitversion/execute@0
-        displayName: "Calculate git version"
+        displayName: Calculate git version
         inputs:
           additionalArguments: "/updateprojectfiles"
+
+      - task: NuGetAuthenticate@1
+        displayName: Authenticate nuget

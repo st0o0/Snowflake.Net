@@ -1,0 +1,13 @@
+parameters:
+  - name: DependsOn
+    default: ""
+
+jobs:
+  - job: versioning
+    displayName: 🏷️ Versioning
+    ${{ if ne(parameters.DependsOn, '')}}:
+      dependsOn: ${{ parameters.DependsOn }}
+    steps:
+      - task: gitversion/execute@0
+        inputs:
+          additionalArguments: "/updateprojectfiles"

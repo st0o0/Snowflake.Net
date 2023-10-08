@@ -1,0 +1,29 @@
+parameters:
+  - name: DependsOn
+    default: ""
+  - name: ProjectName
+    default: ""
+  - name: BuildConfiguration
+    default: "Release"
+
+jobs:
+  - job: test
+    displayName: 🧪 Test ${{ parameters.ProjectName }}
+    ${{ if ne(parameters.DependsOn, '')}}:
+      dependsOn: ${{ parameters.DependsOn }}
+    steps:
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: "test"
+          projects: "**/*.@(Test|Tests).csproj"
+          arguments: >-
+            --configuration ${{ parameters.BuildConfiguration }}
+            --collect:"XPlat Code Coverage"
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura,opencover
+               DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile=**/obj/**
+          publishTestResults: true
+
+      - task: PublishCodeCoverageResults@1
+        inputs:
+          codeCoverageTool: Cobertura
+          summaryFileLocation: $(Agent.TempDirectory)/*/coverage.cobertura.xml

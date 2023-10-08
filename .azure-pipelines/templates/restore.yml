@@ -1,16 +1,16 @@
 parameters:
   - name: DependsOn
-    default: ''
-  - name: InternalFeedName
-    default: ''
+    default: ""
+  - name: VstsFeed
+    default: ""
   - name: ProjectPath
-    default: ''
+    default: ""
   - name: ProjectName
-    default: ''
+    default: ""
 
 jobs:
   - job: restore
-    displayName: ♻️ Restore NuGet dependencies for ${{ parameters.ProjectName}}
+    displayName: ♻️ Restore ${{ parameters.ProjectName }}
     ${{ if ne(parameters.DependsOn, '')}}:
       dependsOn: ${{ parameters.DependsOn }}
     steps:
@@ -19,5 +19,5 @@ jobs:
           command: "restore"
           projects: ${{ parameters.ProjectPath }}
           feedsToUse: "select"
-          vstsFeed: ${{ parameters.InternalFeedName }}
+          vstsFeed: ${{ parameters.VstsFeed }}
           includeNuGetOrg: true
