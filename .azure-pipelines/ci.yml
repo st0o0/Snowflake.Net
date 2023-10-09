@@ -1,15 +1,8 @@
 trigger:
   batch: true
   branches:
-    exclude:
-      - master
-      - gh-pages
-  paths:
-    exclude:
-      - .github
-      - docs
-      - CHANGELOG.md
-      - CONTRIBUTING.md
+    include:
+      - dev
 
 pr:
   branches:
@@ -63,8 +56,10 @@ stages:
             displayName: 'Build projects [$(buildConfiguration)]'
             inputs:
               command: 'build'
+              noCache: true
               projects: '$(projectPath)'
               arguments: '--configuration $(buildConfiguration) --no-restore'
+
               versioningScheme: byEnvVar
               versionEnvVar: 'GitVersion.SemVer'
           
@@ -140,7 +135,7 @@ stages:
             displayName: Publish CI package to Azure artifacts
             inputs:
               command: 'push'
-              packagesToPush: $(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg
+              packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
               nuGetFeedType: 'internal'
               vstsFeed: $(internalFeedName)
               publishVstsFeed: $(internalFeedName)

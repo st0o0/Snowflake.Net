@@ -1,0 +1,26 @@
+parameters:
+  - name: DependsOn
+    type: object
+    default: []
+  - name: ProjectPath
+    default: ""
+  - name: ProjectName
+    default: ""
+  - name: BuildConfiguration
+    default: "Release"
+
+jobs:
+  - job: build
+    displayName: '🚧 Build ${{ parameters.ProjectName }}'
+    ${{ if ne(parameters.DependsOn, '')}}:
+      dependsOn: ${{ parameters.DependsOn }}
+    steps:
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: "build"
+          noCache: true
+          projects: ${{ parameters.ProjectPath }}
+          buildProperties: 
+          arguments: "--configuration ${{ parameters.BuildConfiguration }} --no-restore"
+          versioningScheme: byEnvVar
+          versionEnvVar: "GitVersion.SemVer"

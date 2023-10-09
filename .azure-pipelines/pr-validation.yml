@@ -1,0 +1,61 @@
+trigger:
+  batch: true
+  branches:
+    include:
+      - dev
+
+pr:
+  branches:
+    include:
+      - dev
+  autoCancel: true
+  drafts: false
+
+variables:
+  - template: variables.yml
+
+stages:
+  - stage: TestStage
+    displayName: Sag mal bist du jetzt devops oder was?
+    pool:
+      vmImage: ${{ variables.vmImage }}
+
+    jobs:
+      - template: templates/setup.yml
+        parameters:
+          DotnetSdkVersion: ${{ variables.netSdkVersion }}
+
+      - template: templates/restore.yml
+        parameters:
+          ProjectPath: ${{ variables.projectPath }}
+          ProjectName: ${{ variables.projectName }}
+          VstsFeed: ${{ variables.internalFeedName }}
+          DependsOn: ["setup"]
+
+      - template: templates/build.yml
+        parameters:
+          ProjectPath: ${{ variables.projectPath }}
+          ProjectName: ${{ variables.projectName }}
+          BuildConfiguration: ${{ variables.buildConfiguration }}
+          DependsOn: ["restore"]
+
+      - template: templates/pack.yml
+        parameters:
+          ProjectPath: ${{ variables.projectPath }}
+          ProjectName: ${{ variables.projectName }}
+          BuildConfiguration: ${{ variables.buildConfiguration }}
+          DependsOn: ["build"]
+
+      - template: templates/test.yml
+        parameters:
+          ProjectName: ${{ variables.projectName }}
+          BuildConfiguration: ${{ variables.buildConfiguration }}
+          DependsOn: ["pack"]
+
+      - template: templates/push.yml
+        parameters:
+          ProjectName: ${{ variables.projectName }}
+          NugetFeedType: "internal"
+          VstsFeed: ${{ variables.internalFeedName }}
+          AllowPackageConflicts: true
+          DependsOn: ["test"]

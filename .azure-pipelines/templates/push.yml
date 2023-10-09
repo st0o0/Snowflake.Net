@@ -1,0 +1,29 @@
+parameters:
+  - name: DependsOn
+    type: object
+    default: []
+  - name: ProjectName
+    default: ""
+  - name: NugetFeedType
+    default: "internal"
+  - name: VstsFeed
+    default: ""
+  - name: AllowPackageConflicts
+    default: false
+
+jobs:
+  - job: push
+    displayName: '🏋🏽 Push ${{ parameters.ProjectName }}'
+    ${{ if ne(parameters.DependsOn, '')}}:
+      dependsOn: ${{ parameters.DependsOn }}
+    steps:
+      - download: current
+        artifact: packages
+
+      - task: NuGetCommand@2
+        inputs:
+          command: "push"
+          packagesToPush: "$(Build.ArtifactStagingDirectory)/packages/*.nupkg;!$(Build.ArtifactStagingDirectory)/packages/*.symbols.nupkg"
+          nuGetFeedType: ${{ parameters.NugetFeedType }}
+          vstsFeed: ${{ parameters.VstsFeed }}
+          allowPackageConflicts: ${{ parameters.AllowPackageConflicts }}

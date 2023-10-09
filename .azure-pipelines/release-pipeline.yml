@@ -4,12 +4,8 @@ trigger:
     include:
       - master
       - dev
-  paths:
-    exclude:
-      - .github
-      - docs
-      - CHANGELOG.md
-      - CONTRIBUTING.md
+
+pr: none
 
 variables:
   - template: variables.yml
@@ -61,6 +57,11 @@ stages:
               versioningScheme: byEnvVar
               versionEnvVar: 'GitVersion.SemVer'
           
+          - task: PublishBuildArtifacts@1
+            displayName: 'publish dlls'
+            inputs:
+              ArtifactName: dlls
+
           - task: DotNetCoreCLI@2
             displayName: 'Create NuGet package'
             inputs:
@@ -83,6 +84,7 @@ stages:
         pool:
           vmImage: $(vmImage)
         steps:
+
           - task: UseDotNet@2
             displayName: Install .NET sdk
             inputs:
@@ -92,6 +94,7 @@ stages:
           - task: DotNetCoreCLI@2
             displayName: 'Run unit tests'
             inputs:
+              
               command: 'test'
               projects: '**/*.@(Test|Tests).csproj'
               arguments: >-
@@ -136,7 +139,7 @@ stages:
               displayName: Publish CI package to Azure artifacts
               inputs:
                 command: 'push'
-                packagesToPush: $(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg
+                packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
                 nuGetFeedType: 'internal'
                 vstsFeed: $(internalFeedName)
                 publishVstsFeed: $(internalFeedName)
@@ -146,7 +149,7 @@ stages:
               displayName: Publish CI package to Nuget.org
               inputs:
                 command: 'push'
-                packagesToPush: $(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg
+                packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
                 nuGetFeedType: 'external'
                 publishFeedCredentials: 'Nuget.org'
           
