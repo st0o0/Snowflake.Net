@@ -1,7 +1,7 @@
 parameters:
   - name: DependsOn
     type: object
-    default:
+    default: []
   - name: DotnetSdkVersion
     default: "netstandard2.0"
 

@@ -1,5 +1,6 @@
 parameters:
   - name: DependsOn
+    type: object
     default: []
   - name: ProjectName
     default: ""
