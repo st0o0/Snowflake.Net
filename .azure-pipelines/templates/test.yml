@@ -9,7 +9,7 @@ parameters:
 
 jobs:
   - job: test
-    displayName: 🧪 Test ${{ parameters.ProjectName }}
+    displayName: '🧪 Test ${{ parameters.ProjectName }}'
     ${{ if ne(parameters.DependsOn, '')}}:
       dependsOn: ${{ parameters.DependsOn }}
     steps:

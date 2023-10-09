@@ -13,7 +13,7 @@ parameters:
 
 jobs:
   - job: push
-    displayName: 🏋🏽 Push ${{ parameters.ProjectName }}
+    displayName: '🏋🏽 Push ${{ parameters.ProjectName }}'
     ${{ if ne(parameters.DependsOn, '')}}:
       dependsOn: ${{ parameters.DependsOn }}
     steps:

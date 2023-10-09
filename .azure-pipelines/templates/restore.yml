@@ -11,7 +11,7 @@ parameters:
 
 jobs:
   - job: restore
-    displayName: ♻️ Restore ${{ parameters.ProjectName }}
+    displayName: '♻️ Restore ${{ parameters.ProjectName }}'
     ${{ if ne(parameters.DependsOn, '')}}:
       dependsOn: ${{ parameters.DependsOn }}
     steps:

@@ -11,7 +11,7 @@ parameters:
 
 jobs:
   - job: build
-    displayName: 🚧 Build ${{ parameters.ProjectName }}
+    displayName: '🚧 Build ${{ parameters.ProjectName }}'
     ${{ if ne(parameters.DependsOn, '')}}:
       dependsOn: ${{ parameters.DependsOn }}
     steps:

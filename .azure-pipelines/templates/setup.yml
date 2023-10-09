@@ -7,7 +7,7 @@ parameters:
 
 jobs:
   - job: setup
-    displayName: 💫 Setup
+    displayName: '💫 Setup ${{ parameters.DotnetSdkVersion }}'
     ${{ if ne(length(parameters.DependsOn), 0) }}:
       dependsOn:
         ${{ parameters.DependsOn }}
