@@ -25,10 +25,6 @@ stages:
         parameters:
           DotnetSdkVersion: $(netSdkVersion)
 
-      - template: templates/versioning.yml
-        parameters:
-          DependsOn: ["setup"]
-
       - template: templates/restore.yml
         parameters:
           ProjectPath: $(projectPath)
@@ -41,7 +37,7 @@ stages:
           ProjectPath: $(projectPath)
           ProjectName: $(projectName)
           BuildConfiguration: $(buildConfiguration)
-          DependsOn: ["restore", "versioning"]
+          DependsOn: ["restore"]
 
       - template: templates/pack.yml
         parameters:
