@@ -27,8 +27,7 @@ stages:
 
       - template: templates/versioning.yml
         parameters:
-          DependsOn:
-            - setup
+          DependsOn: ["setup"]
 
       - template: templates/restore.yml
         parameters:
@@ -36,32 +35,27 @@ stages:
           ProjectName: $(projectName)
           BuildConfiguration: $(buildConfiguration)
           VstsFeed: $(internalFeedName)
-          DependsOn:
-            - setup
+          DependsOn: ["setup"]
 
       - template: templates/build.yml
         parameters:
           ProjectPath: $(projectPath)
           ProjectName: $(projectName)
           BuildConfiguration: $(buildConfiguration)
-          DependsOn:
-            - restore
-            - versioing
+          DependsOn: ["restore", "versioning"]
 
       - template: templates/pack.yml
         parameters:
           ProjectPath: $(projectPath)
           ProjectName: $(projectName)
           BuildConfiguration: $(buildConfiguration)
-          DependsOn:
-            - build
+          DependsOn: ["build"]
 
       - template: templates/test.yml
         parameters:
           ProjectName: $(projectName)
           BuildConfiguration: $(buildConfiguration)
-          DependsOn:
-            - pack
+          DependsOn: ["pack"]
 
       - template: templates/push.yml
         parameters:
@@ -69,5 +63,4 @@ stages:
           NugetFeedType: "internal"
           VstsFeed: $(internalFeedName)
           AllowPackageConflicts: true
-          DependsOn:
-            - test
+          DependsOn: ["test"]
