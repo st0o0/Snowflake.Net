@@ -33,7 +33,6 @@ stages:
         parameters:
           ProjectPath: $(projectPath)
           ProjectName: $(projectName)
-          BuildConfiguration: $(buildConfiguration)
           VstsFeed: $(internalFeedName)
           DependsOn: ["setup"]
 
