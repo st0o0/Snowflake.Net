@@ -21,6 +21,6 @@ jobs:
           noCache: true
           projects: ${{ parameters.ProjectPath }}
           buildProperties: 
-          arguments: "--configuration ${{ parameters.DotnetSdkVersion }} --no-restore"
+          arguments: "--configuration ${{ parameters.BuildConfiguration }} --no-restore"
           versioningScheme: byEnvVar
           versionEnvVar: "GitVersion.SemVer"
