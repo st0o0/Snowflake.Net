@@ -11,5 +11,5 @@ variables:
     value: src/Snowflake.Net/Snowflake.Net.csproj
   - name: internalFeedName
     value: Snowflake.Net/Snowflake.Net
-  - name: ProjectName
+  - name: projectName
     value: Snowflake.Net

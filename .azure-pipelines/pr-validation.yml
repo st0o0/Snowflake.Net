@@ -18,44 +18,44 @@ stages:
   - stage: TestStage
     displayName: Sag mal bist du jetzt devops oder was?
     pool:
-      vmImage: $(vmImage)
+      vmImage: ${{ variables.vmImage }}
 
     jobs:
       - template: templates/setup.yml
         parameters:
-          DotnetSdkVersion: $(netSdkVersion)
+          DotnetSdkVersion: ${{ variables.netSdkVersion }}
 
       - template: templates/restore.yml
         parameters:
-          ProjectPath: $(projectPath)
-          ProjectName: $(projectName)
-          VstsFeed: $(internalFeedName)
+          ProjectPath: ${{ variables.projectPath }}
+          ProjectName: ${{ variables.projectName }}
+          VstsFeed: ${{ variables.internalFeedName }}
           DependsOn: ["setup"]
 
       - template: templates/build.yml
         parameters:
-          ProjectPath: $(projectPath)
-          ProjectName: $(projectName)
-          BuildConfiguration: $(buildConfiguration)
+          ProjectPath: ${{ variables.projectPath }}
+          ProjectName: ${{ variables.projectName }}
+          BuildConfiguration: ${{ variables.buildConfiguration }}
           DependsOn: ["restore"]
 
       - template: templates/pack.yml
         parameters:
-          ProjectPath: $(projectPath)
-          ProjectName: $(projectName)
-          BuildConfiguration: $(buildConfiguration)
+          ProjectPath: ${{ variables.projectPath }}
+          ProjectName: ${{ variables.projectName }}
+          BuildConfiguration: ${{ variables.buildConfiguration }}
           DependsOn: ["build"]
 
       - template: templates/test.yml
         parameters:
-          ProjectName: $(projectName)
-          BuildConfiguration: $(buildConfiguration)
+          ProjectName: ${{ variables.projectName }}
+          BuildConfiguration: ${{ variables.buildConfiguration }}
           DependsOn: ["pack"]
 
       - template: templates/push.yml
         parameters:
-          ProjectName: $(projectName)
+          ProjectName: ${{ variables.projectName }}
           NugetFeedType: "internal"
-          VstsFeed: $(internalFeedName)
+          VstsFeed: ${{ variables.internalFeedName }}
           AllowPackageConflicts: true
           DependsOn: ["test"]
